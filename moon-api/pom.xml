@@ -55,6 +55,7 @@
     <modules>
         <module>moon-common</module>
         <module>moon-thread</module>
+        <module>moon-redis</module>
     </modules>
 
 </project>
