@@ -1,0 +1,7 @@
+
+.layui-btn {
+    background-color: #4E73FF;
+}
+.layui-nav-tree .layui-nav-child dd.layui-this, .layui-nav-tree .layui-nav-child dd.layui-this a, .layui-nav-tree .layui-this, .layui-nav-tree .layui-this>a, .layui-nav-tree .layui-this>a:hover {
+    background-color:  #4E73FF;
+}

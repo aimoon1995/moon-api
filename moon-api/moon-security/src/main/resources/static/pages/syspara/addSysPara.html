@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link href="../../css/bootstrap.min.css" media="screen" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <form class="form-horizontal" id="form" onsubmit="return false">
+        <fieldset>
+            <div class='form-group'>
+                <label class='col-md-2 control-label'><label
+                        style="color: red;">*</label> 关键字</label>
+                <div class='col-md-8'>
+                    <input class='form-control' data-bv-notempty='true' data-bv-notempty-message='关键字 不能为空' id='k'
+                           name='k'
+                           placeholder='关键字' type='text'>
+                </div>
+            </div>
+            <div class='form-group'>
+                <label class='col-md-2 control-label'><label
+                        style="color: red;">*</label> 值</label>
+                <div class='col-md-8'>
+                    <input class='form-control' data-bv-notempty='true' data-bv-notempty-message='值 不能为空' id='val'
+                           name='val' placeholder='值'
+                           type='text'>
+                </div>
+            </div>
+            <div class='form-group'>
+                <label class='col-md-2 control-label'><label
+                        style="color: red;">*</label> 描述</label>
+                <div class='col-md-8'>
+                    <input class='form-control' data-bv-notempty='true' data-bv-notempty-message='描述 不能为空' id='des'
+                           name='des' placeholder='描述'
+                           type='text'>
+                </div>
+            </div>
+
+
+            <div class="form-actions">
+                <div align="center" class="row">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="location.href='sysParaList.html'">返回</button>
+                        <button class="btn btn-primary" onclick="add()" type="submit">
+                            <i class="fa fa-save"></i> 保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+</div>
+<script src="../../js/libs/jquery-2.1.1.min.js" type="text/javascript"></script>
+<script src="../../js/jq.js" type="text/javascript"></script>
+<script src="../../js/plugin/bootstrapvalidator/bootstrapValidator.min.js" type="text/javascript"></script>
+<script src="../../js/common.js" type="text/javascript"></script>
+<script src="../../layui/layui.js" type="text/javascript"></script>
+<script type="text/javascript">
+    layui.use(['layer', 'laydate'], function () {
+        var layer = layui.layer;
+    });
+
+    function add() {
+        $('#form').bootstrapValidator();
+        var bootstrapValidator = $("#form").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if (!bootstrapValidator.isValid()) {
+            return;
+        }
+
+        var formdata = $("#form").serializeObject();
+
+        $.ajax({
+            type: 'post',
+            url: '/sysParas',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(formdata),
+            success: function (data) {
+                layer.msg("添加成功", {shift: -1, time: 1000}, function () {
+                    location.href = "sysParaList.html";
+                });
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

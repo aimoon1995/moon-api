@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta content="no-cache" http-equiv="Pragma">
+    <meta content="no-cache" http-equiv="Cache-Control">
+    <meta content="0" http-equiv="Expires">
+    <title>登录</title>
+    <link href="css/login.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<div class="login">
+    <div class="message">数据平台</div>
+    <div id="darkbannerwrap"></div>
+
+    <form id="login-form" method="post" onsubmit="return false;">
+        <input autocomplete="off" id="username" name="username" placeholder="请输入手机号"type="text">
+        <div class="mima_input">
+            <hr class="hr15">
+            <input autocomplete="off" id="password" name="password" placeholder="请输入密码"type="password">
+        </div>
+        <div style="display: none;" class="yzm_input">
+            <hr class="hr15">
+            <input autocomplete="off" id="smsCode" style="width: 200px;" name="smsCode" placeholder="请输入短信验证码" type="text">
+            <button onclick="getIdentify(this)" id="getsmscode" style="width: 135px;font-size: 15px;padding-left: 16px;"type="button">获取短信验证码</button>
+        </div>
+
+        <hr class="hr15">
+        <button onclick="login(this)" class="logintype" style="width: 100%;"type="submit" value="1">登录</button>
+        <hr class="hr15">
+        <div style="text-align: center;" class="yzm_lable">
+            <a onclick="login_type(1)" style="width: 100%;"type="button">验证码登录</a>
+        </div>
+        <div style="text-align: center;display: none" class="mima_lable">
+            <a onclick="login_type(2)" style="width: 100%;"type="button">密码登录</a>
+        </div>
+
+
+        <hr class="hr20">
+        <span id="info" style="color: red"></span>
+    </form>
+
+
+</div>
+
+</body>
+<script src="js/libs/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="layui/layui.js"></script>
+<script type="text/javascript">
+
+    var countdown=10;
+
+    layui.use('layer', function(){
+        var layer = layui.layer;
+    });
+
+    if (top != self) {
+        parent.location.href = '/login.html';
+    }
+
+    var token = localStorage.getItem("token");
+    if (token != null && token.trim().length != 0) {
+        $.ajax({
+            type: 'get',
+            url: '/users/current?token=' + token,
+            success: function (data) {
+                location.href = '/index.html';
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                var msg = xhr.responseText;
+                var response = JSON.parse(msg);
+                var code = response.code;
+                var message = response.message;
+                if (code == 401) {
+                    localStorage.removeItem("token");
+                }
+            }
+        });
+    }
+    function countdown2(val){
+        if (countdown == 0) {
+            val.removeAttribute("disabled");
+            $("#getsmscode").html("获取短信验证码");
+            countdown = 10;
+        } else {
+            val.setAttribute("disabled", true);
+            $("#getsmscode").html("重新发送"+"(" + countdown + ")");
+            countdown--;
+            setTimeout(function() {
+                countdown2(val)
+            },1000)
+        }
+    }
+
+    function getIdentify(val){
+        var username = $.trim($('#username').val());
+        if(username==undefined || username=='' || username.length<=0){
+            $("#info").html('手机号不能为空');
+            return;
+        }
+        $.ajax({
+            type: 'post',
+            url: '/identifyCode/sendIdentifyCode?phone='+username,
+            success: function (data) {
+                countdown2(val);
+                layer.msg(data.msg);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+            }
+        });
+    }
+
+    function login_type(type) {
+        if(type==1){
+            $(".mima_input").hide();
+            $(".mima_lable").show();
+            $(".yzm_input").show();
+            $(".yzm_lable").hide();
+            $(".logintype").val(2);
+            $("#password").val("");
+        }else{
+            $(".mima_input").show();
+            $(".mima_lable").hide();
+            $(".yzm_input").hide();
+            $(".yzm_lable").show();
+            $(".logintype").val(1);
+            $("#smsCode").val("");
+        }
+    }
+
+    function login(obj) {
+        $(obj).attr("disabled", true);
+        var logintype = $.trim($('.logintype').val());
+        var username = $.trim($('#username').val());
+        var password = $.trim($('#password').val());
+        var smsCode = $.trim($('#smsCode').val());
+        var path = "/login";
+        var data ={"username":username,"password":password,"logintype":logintype};
+        var  s = $("#login-form").serialize();
+
+        if(logintype=='2'){
+            //短信登录，先共用密码登录
+            path = "/smslogin";
+            data ={"mobile":username,"smsCode":smsCode,"logintype":logintype};
+        }
+
+        if (logintype=='1' && (username == "" || password == "")) {
+            $("#info").html('用户名或者密码不能为空');
+            $(obj).attr("disabled", false);
+        } else if (logintype=='2' && (username == "" || smsCode == "")) {
+            $("#info").html('用户名或者验证码不能为空');
+            $(obj).attr("disabled", false);
+        } else {
+            $.ajax({
+                type: 'post',
+                url: path,
+                data: data,
+                success: function (data) {
+                    localStorage.setItem("token", data.token);
+                    location.href = '/index.html';
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    var msg = xhr.responseText;
+                    var response = JSON.parse(msg);
+                    $("#info").html(response.message);
+                    $(obj).attr("disabled", false);
+                }
+            });
+
+        }
+    }
+</script>
+</html>

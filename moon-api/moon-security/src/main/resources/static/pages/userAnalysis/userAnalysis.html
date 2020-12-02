@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../layui/css/layui.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../css/dp_css.css">
+</head>
+
+<style>
+    .lab_1 {
+        text-align: right;
+    }
+
+    li {
+        display: inline-block;
+        margin-left: 25px;
+    }
+
+    li {
+        *display: inline;
+        *zoom: 1;
+    }
+
+    span {
+        margin: 0 30px;
+    }
+
+    p {
+        line-height: 3;
+    }
+
+    #tableArea .dataTables_wrapper {
+        position: relative;
+        clear: both;
+        zoom: 1;
+        overflow-x: auto;
+    }
+
+    .level_1 {
+        background-color: #C0C0C0;
+    }
+
+    .level_2 {
+        margin: 10px 20px;
+        background-color: #FFFFFF;
+    }
+
+    .level_3 {
+        /*margin: 40px 20px;*/
+        padding: 20px;
+    }
+
+    .level_4 {
+        border: 1px solid #DCDCDC;
+    }
+
+    .level_5 {
+        height: 80px;
+    }
+
+    .level_6 {
+        width: 25%;
+        height: 100%;
+        float: left;
+    }
+
+    .level_7 {
+        margin-left: 15%;
+        margin-top: 18px;
+    }
+
+    .level_8 {
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    span {
+    }
+</style>
+<body>
+<div class="level_1">
+    <div style="height: 10px;"></div>
+
+    <!--订单趋势----日期对比图-->
+    <div class="level_2" style="height: 700px;margin-bottom: 0px;">
+        <ul id="myTab" class="nav nav-tabs" style="font-size: 20px;font-family: 黑体;margin-left: 10px;">
+            <li class="active">
+                <a href="#tab_1" data-toggle="tab">用户下单分层</a>
+            </li>
+            <li>
+                <a href="#tab_2" data-toggle="tab">用户注册分层</a>
+            </li>
+        </ul>
+        <!-- 频率图 -->
+        <div id="plt">
+            <!-- 频率图导出 -->
+            <form id="exportPLLineFormId" action="#">
+                <input name="dateStart" id="dateStartLine" type="text" style="display: none">
+                <input name="dateEnd" id="dateEndLine" type="text" style="display: none">
+            </form>
+            <!--  频率图查询条件 -->
+            <form class="form-inline" id="orderPLLineFormId" onsubmit="return false" style="margin: 25px;">
+                <label>日期：</label>
+                <input readonly="readonly" class="form-control" name="dateStart" id="dateStart" type="text">-
+                <input readonly="readonly" class="form-control" name="dateEnd" id="dateEnd" type="text">
+                <button class="layui-btn layui-btn-sm" onclick="userOrderPL(1);"><i class="layui-icon">&#xe615;</i>查询
+                </button>
+                <button class="layui-btn layui-btn-sm" onclick="userOrderPLExport();"><i class="layui-icon"></i>导出
+                </button>
+            </form>
+            <div id="orderPLLine" class="chart" style="margin:50px 30px 20px 50px; height: 480px;"></div>
+        </div>
+        <!-- 注册订单图 -->
+        <div style="display:none" id="zcddt">
+            <!-- 注册订单导出 -->
+            <form id="exportOrderViewLineFormId" action="#">
+                <input name="dateStart" id="dateStartRegLineExport" type="text" style="display: none">
+                <input name="dateEnd" id="dateEndRegLineExport" type="text" style="display: none">
+            </form>
+            <!-- 注册订单查询条件 -->
+            <form class="form-inline" id="orderViewLineFormId" onsubmit="return false" style="margin: 25px;">
+                <label>日期：</label>
+                <input class="form-control" name="dateStart" readonly="readonly" id="dateStartRegLine" type="text">-
+                <input class="form-control" name="dateEnd" readonly="readonly" id="dateEndRegLine" type="text">
+                <button class="layui-btn layui-btn-sm" onclick="userRegOrder(1);"><i class="layui-icon">&#xe615;</i>查询
+                </button>
+                <button class="layui-btn layui-btn-sm" onclick="userRegOrderExport();"><i class="layui-icon"></i>导出
+                </button>
+            </form>
+            <div id="orderRegLine" class="chart" style="margin:50px 30px 20px 50px; height: 480px;"></div>
+        </div>
+    </div>
+
+    <div style="height: 10px;"></div>
+    <div class="level_2" style="margin-top: 0px;">
+        <div class="level_3">
+            <div style="padding-bottom: 20px;font-size: 20px;font-family: 黑体;"><span>用户明细</span></div>
+            <div>
+                <header style="height: 100%">
+                    <div align="left">
+                        <table style="width: 100%">
+                            <tr>
+                                <td>
+                                    <!-- 导出查询条件 -->
+                                    <form id="exportFormId" action="#" method="post">
+
+                                        <input name="regTime1" id="regTime1" type="text" style="display: none">
+                                        <input name="regTime2" id="regTime2" type="text" style="display: none">
+                                        <input name="confirmTime1" id="confirmT1" type="text" style="display: none">
+                                        <input name="confirmTime2" id="confirmT2" type="text" style="display: none">
+                                        <input name="regDay1" id="regDay1" type="text" style="display: none">
+                                        <input name="regDay2" id="regDay2" type="text" style="display: none">
+                                        <input name="mobile" id="mobile" type="text" style="display: none">
+                                    </form>
+                                    <form class="form-inline" onsubmit="return false">
+
+                                        <div class="form-group">
+                                            <p>
+                                                    <span>
+                                                        注册时间:
+                                                        <input style="width: 105px;" readonly="readonly"
+                                                               name="regStartTime" type="text" class="form-control"
+                                                               placeholder="注册开始时间" id="regStartTime">-
+                                                        <input style="width: 105px;" readonly="readonly"
+                                                               name="regEndTime" type="text" class="form-control"
+                                                               placeholder="注册结束时间" id="regEndTime">
+                                                    </span>
+                                                <span>
+                                                        确认费用时间:
+                                                        <input style="width: 100px;" readonly="readonly"
+                                                               name="confirmTime1" type="text" class="form-control"
+                                                               placeholder="确认费用时间" id="confirmTime1">-
+                                                        <input style="width: 100px;" readonly="readonly"
+                                                               name="confirmTime2" type="text" class="form-control"
+                                                               placeholder="确认费用时间" id="confirmTime2">
+                                                    </span>
+                                                <span>
+                                                        注册天数:
+                                                        <input style="width: 100px;" name="regDayNum1" type="text"
+                                                               class="form-control" placeholder="注册天数" id="regDayNum1">-
+                                                        <input style="width: 100px;" name="regDayNum2" type="text"
+                                                               class="form-control" placeholder="注册天数" id="regDayNum2">
+                                                    </span>
+                                            </p>
+                                            <p>
+
+                                                    <span>
+                                                        乘客号码:
+                                                        <input style="width: 218px;" id="passPhone" name="passPhone"
+                                                               type="text" class="form-control" placeholder="乘客号码">
+                                                    </span>
+
+                                                <span>
+                                                        <button id="userDetailSearchBt"
+                                                                class="layui-btn layui-btn-sm"><i class="layui-icon">&#xe615;</i>搜索</button>
+                                                        <button class="layui-btn layui-btn-sm"
+                                                                onclick="userDetailExport();"><i
+                                                                class="layui-icon layui-icon-export"></i>导出</button>
+                                                    </span>
+                                            </p>
+
+                                        </div>
+
+                                    </form>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </header>
+
+                <div id="tableArea" style="margin-top: 50px;">
+                    <div class="widget-body no-padding">
+                        <table id="dt-table" class="table table-striped table-bordered table-hover "
+                               style="white-space: nowrap;">
+                            <thead>
+                            <tr>
+                            </tr>
+                            <tr>
+                                <th>手机号</th>
+                                <th>渠道</th>
+                                <th>注册时间</th>
+                                <th>注册天数</th>
+                                <th>休眠</th>
+                                <!-- <th>总下单数</th>
+                                 <th>总成单数</th>
+                                 <th>总消费</th>
+                                 <th>总流水</th>
+                                 <th>总实付</th>-->
+                                <th>确认费用时间区间</th>
+                                <th>当期发单</th>
+                                <th>当期成单</th>
+                                <th>美团成单</th>
+                                <th>和行成单</th>
+                                <th>当期流水</th>
+                                <th>当期实付</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>
+
+<script type="text/javascript" src="../../js/libs/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="../../js/jq.js"></script>
+<script type="text/javascript" src="../../js/plugin/datatables/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="../../js/plugin/datatables/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="../../js/echarts/echarts.min.js"></script>
+<script type="text/javascript" src="../../layui/layui.js"></script>
+<script type="text/javascript" src="../../js/my/permission.js"></script>
+<script type="text/javascript" src="../../js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="../../js/common.js"></script>
+<script type="text/javascript">
+    var pers = checkPermission();
+    $('#myTab a:first').tab('show');//初始化显示哪个tab
+    //点击Tab页切换
+    $('ul li a').bind('click', function () {
+        var tabId = $(this).attr("href");
+        if (tabId == "#tab_1") {
+            $("#plt").show();
+            $("#zcddt").hide();
+            $('#myTab a:first').tab('show')
+            userOrderPL(1);
+        } else if (tabId == "#tab_2") {
+            $("#plt").hide();
+            $("#zcddt").show();
+            $('#myTab a:last').tab('show')
+            userRegOrder(1);
+        }
+    });
+
+    //用户下单频率导出
+    function userOrderPLExport() {
+        $("#dateStartLine").val($("#dateStart").val());
+        $("#dateEndLine").val($("#dateEnd").val());
+        $('#exportPLLineFormId').attr("action", "/userAnalyse/userLine1Export");
+        $('#exportPLLineFormId').submit();
+    }
+
+    //用户明细导出
+    function userDetailExport() {
+        $("#regTime1").val($("#regStartTime").val());
+        $("#regTime2").val($("#regEndTime").val());
+        $("#regDay1").val($("#regDayNum1").val());
+        $("#regDay2").val($("#regDayNum2").val());
+        $("#confirmT1").val($("#confirmTime1").val());
+        $("#confirmT2").val($("#confirmTime2").val());
+        $("#mobile").val($("#passPhone").val());
+        $('#exportFormId').attr("action", "/userAnalyse/getUserDetailsExport");
+        $('#exportFormId').submit();
+    }
+
+    //用户注册与下单贡献图导出
+    function userRegOrderExport() {
+        $("#dateStartRegLineExport").val($("#dateStartRegLine").val());
+        $("#dateEndRegLineExport").val($("#dateEndRegLine").val());
+        $('#exportOrderViewLineFormId').attr("action", "/userAnalyse/getUserLine2Export");
+        $('#exportOrderViewLineFormId').submit();
+    }
+
+    //layui空间初始化载入
+    function layui_load() {
+        layui.use('layer', function () {
+            var layer = layui.layer;
+        });
+        layui.use(['layer', 'laydate'], function () {
+            var layer = layui.layer;
+            var laydate = layui.laydate;
+
+            //用户下单频率 查询 初始化时间控件
+            var dateStart = laydate.render({
+                elem: '#dateStart',
+                max: maxDate(),
+                trigger: 'click',
+                btns: ['confirm'], //去除"现在,清空"按钮
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM', //指定时间格式
+                value: new Date(new Date() - 1000 * 60 * 60 * 24 * 30 * 11), // 指定值，去年
+                done: function (value, date) {
+                    dateEnd.config.min = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date
+                    };
+                }
+
+            });
+            var dateEnd = laydate.render({
+                elem: '#dateEnd',
+                max: maxDate(),
+                trigger: 'click',
+                btns: ['confirm'], //去除"现在,清空"按钮
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM', //指定时间格式
+                value: new Date(new Date() - 1000 * 60 * 60 * 24), // 指定值
+                done: function (value, date) {
+                    dateStart.config.max = {
+                        year: date.year,
+                        month: date.month - 1,//注意是month-1，写在date上的话你后边的日期选择不了
+                        date: date.date
+                    }
+                }
+            });
+
+            //注册与订单图 查询 初始化时间控件
+            var dateStartRegLine = laydate.render({
+                elem: '#dateStartRegLine',
+                max: maxDate(),
+                trigger: 'click',
+                btns: ['confirm'], //去除"现在,清空"按钮
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM', //指定时间格式
+                value: new Date(new Date() - 1000 * 60 * 60 * 24 * 30 * 11), // 指定值，去年
+                done: function (value, date) {
+                    dateEndRegLine.config.min = {
+                        year: date.year,
+                        month: date.month - 1,//注意是month-1，写在date上的话你后边的日期选择不了
+                        date: date.date
+                    }
+                }
+            });
+            var dateEndRegLine = laydate.render({
+                elem: '#dateEndRegLine',
+                max: maxDate(),
+                trigger: 'click',
+                btns: ['confirm'], //去除"现在,清空"按钮
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM', //指定时间格式
+                value: new Date(new Date() - 1000 * 60 * 60 * 24), // 指定值，当前月
+                done: function (value, date) {
+                    dateStartRegLine.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date
+                    };
+                }
+
+            });
+
+
+            //用户明细 注册时间 初始化时间控件
+            var regStartTime = laydate.render({
+                elem: '#regStartTime',
+                max: maxDate(),
+                trigger: 'click',
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM-dd', //指定时间格式
+                value: '',
+                done: function (value, date) {
+                    regEndTime.config.min = {
+                        year: date.year,
+                        month: date.month - 1,//注意是month-1，写在date上的话你后边的日期选择不了
+                        date: date.date
+                    }
+                }
+            });
+            var regEndTime = laydate.render({
+                elem: '#regEndTime',
+                max: maxDate(),
+                trigger: 'click',
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM-dd', //指定时间格式
+                value: '',
+                done: function (value, date) {
+                    regStartTime.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date
+                    };
+                }
+
+            });
+
+
+            //用户明细 确认费用时间 初始化时间控件
+            var confirmTime1 = laydate.render({
+                elem: '#confirmTime1',
+                max: maxDate(),
+                trigger: 'click',
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM-dd', //指定时间格式
+                btns: ['confirm'], //去除"现在,清空"按钮
+                value: new Date(new Date() - 1000 * 60 * 60 * 24 * 31), // 指30天前
+                done: function (value, date) {
+                    confirmTime2.config.min = {
+                        year: date.year,
+                        month: date.month - 1,//注意是month-1，写在date上的话你后边的日期选择不了
+                        date: date.date
+                    }
+                }
+            });
+            var confirmTime2 = laydate.render({
+                elem: '#confirmTime2',
+                max: maxDate(),
+                trigger: 'click',
+                type: 'date', // 可选择：年、月、日
+                format: 'yyyy-MM-dd', //指定时间格式
+                btns: ['confirm'], //去除"现在,清空"按钮
+                value: maxDate(), // 昨天
+                done: function (value, date) {
+                    confirmTime1.config.max = {
+                        year: date.year,
+                        month: date.month - 1,
+                        date: date.date
+                    };
+                }
+
+            });
+
+
+        });
+    }
+
+    //用户发单频率图
+    function userOrderPL(type) {
+        if(type==1){
+            var dateStart = $('#dateStart').val();
+            var dateEnd = $('#dateEnd').val();
+            if (dateStart.length == 0 || dateEnd.length == 0) {
+                layer.msg('时间选择错误');
+                return
+            }
+        }
+        if(new Date(dateStart).getTime() > new Date(dateEnd).getTime()){
+            layer.msg('查询时间选择错误');
+            return
+        }
+        $.ajax({
+            type: 'get',
+            url: '/userAnalyse/getUserLine1',
+            data: $("#orderPLLineFormId").serialize(),
+            success: function (data) {
+                var of = data.of;
+                var dp = data.dp;
+                var zp = data.zp;
+                var gp = data.gp;
+                var XDate = data.XDate;
+
+                var chart = echarts.init(document.getElementById('orderPLLine'));
+                var colors = ['#5793f3', '#d14a61', '#675bba'];
+                option = {
+                    color: colors,
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    grid: {
+                        top: '10%',
+                        right: '20%'
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: {show: false, readOnly: false},
+                            restore: {show: false},
+                            saveAsImage: {show: false}
+                        }
+                    },
+                    legend: {
+                        icon: 'circle',
+                        itemWidth: 6,
+                        itemGap: 20,
+                        textStyle: {
+                            color: '#556677'
+                        }
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            axisTick: {
+                                alignWithLabel: true
+                            },
+                            data: XDate //["2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27", '2020-02-28', '2020-02-29', '2020-03-01']
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '人数',
+                            position: 'left',
+                            axisLine: {
+                                lineStyle: {
+                                    color: colors[0]
+                                }
+                            },
+                            axisLabel: {
+                                formatter: '{value} '
+                            }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '偶发',
+                            type: 'line',
+                            smooth: true,
+                            color: '#3AA1FF',
+                            data: of
+                        }, {
+                            name: '低频',
+                            type: 'line',
+                            smooth: true,
+                            color: '#5EC67D',
+                            data: dp
+                        }, {
+                            name: '中频',
+                            type: 'line',
+                            smooth: true,
+                            color: '#FFFF00',
+                            data: zp
+                        }, {
+                            name: '高频',
+                            type: 'line',
+                            smooth: true,
+                            color: '#FFA07A',
+                            data: gp
+                        }
+                    ]
+                };
+                // 使用刚指定的配置项和数据显示图表。
+                chart.setOption(option);
+            }
+        });
+    }
+
+    //用户注册与订单贡献图
+    function userRegOrder(type) {
+        if(type == 1){
+            var dateStart = $('#dateStartRegLine').val();
+            var dateEnd = $('#dateEndRegLine').val();
+            if (dateStart.length == 0 || dateEnd.length == 0) {
+                layer.msg('时间选择错误');
+                return
+            }
+        }
+        if(new Date(dateStart).getTime() > new Date(dateEnd).getTime()){
+            layer.msg('查询时间选择错误');
+            return
+        }
+        $.ajax({
+            type: 'get',
+            url: '/userAnalyse/getUserLine2',
+            data: $("#orderViewLineFormId").serialize(),
+            success: function (data) {
+                var regNew = data.regNew;
+                var regWeek = data.regWeek;
+                var reg1Month = data.reg1Month;
+                var reg3Month = data.reg3Month;
+                var reg6Month = data.reg6Month;
+                var reg6UpMonth = data.reg6UpMonth;
+                var XDate = data.XDate;
+
+                var chart = echarts.init(document.getElementById('orderRegLine'));
+
+                option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    grid: {
+                        top: '10%',
+                        right: '10%'
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: {show: false, readOnly: false},
+                            restore: {show: false},
+                            saveAsImage: {show: false}
+                        }
+                    },
+                    legend: {
+                        icon: 'circle',
+                        itemWidth: 6,
+                        itemGap: 20,
+                        textStyle: {
+                            color: '#556677'
+                        }
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            axisTick: {
+                                alignWithLabel: true
+                            },
+                            data: XDate//['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23']
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '单量',
+                            position: 'left',
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#000000'
+                                }
+                            },
+                            axisLabel: {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    series: [{
+                        type: 'line',
+                        name: '新注册',
+                        data: regNew,
+                        smooth: true,
+                        color: '#3AA1FF'
+                    }, {
+                        type: 'line',
+                        name: '注册一周内',
+                        data: regWeek,
+                        smooth: true,
+                        color: '#5EC67D'
+                    }, {
+                        type: 'line',
+                        name: '注册1个月',
+                        data: reg1Month,
+                        smooth: true,
+                        color: '#FFFF00'
+                    }, {
+                        type: 'line',
+                        name: '注册3个月',
+                        data: reg3Month,
+                        smooth: true,
+                        color: '#2ec7c9'
+                    }, {
+                        type: 'line',
+                        name: '注册6个月',
+                        data: reg6Month,
+                        smooth: true,
+                        color: '#00FF00'
+                    }, {
+                        type: 'line',
+                        name: '注册6个月以上',
+                        data: reg6UpMonth,
+                        smooth: true,
+                        color: '#ffb468'
+                    }
+                    ]
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                chart.setOption(option);
+            }
+        });
+    }
+
+    //用户明细
+    var example;
+
+    function userDetailInit() {
+        example =
+            $('#dt-table').DataTable({
+                "searching": false,
+                "processing": false,
+                "bLengthChange": false, //开关，是否显示每页显示多少条数据的下拉框
+                "serverSide": true,
+                "bProcessing": true,
+                "language": {
+                    "url": "/js/plugin/datatables/Chinese.lang",
+                },
+                "ajax": {
+                    "url": "/userAnalyse/getUserDetails",
+                    "type": "post",
+                    "data": function (d) {
+                        d.regTime1 = $('#regStartTime').val();
+                        d.regTime2 = $('#regEndTime').val();
+                        d.confirmTime1 = $('#confirmTime1').val();
+                        d.confirmTime2 = $('#confirmTime2').val();
+                        d.regDay1 = $('#regDayNum1').val();
+                        d.regDay2 = $('#regDayNum2').val();
+                        d.mobile = $('#passPhone').val();
+                    },
+                    "error": function (xhr, textStatus, errorThrown) {
+                        var msg = xhr.responseText;
+                        console.log(msg);
+                        var response = JSON.parse(msg);
+                        var code = response.code;
+                        var message = response.message;
+                        if (code == 400) {
+                            layer.msg(message);
+                        } else if (code == 401) {
+                            localStorage.removeItem("token");
+                            layer.msg("token过期，请先登录", {shift: -1, time: 1000}, function () {
+                                location.href = '/login.html';
+                            });
+                        } else if (code == 403) {
+                            console.log("未授权:" + message);
+                            layer.msg('未授权');
+                        } else if (code == 500) {
+                            layer.msg('系统错误：' + message);
+                        }
+                    }
+                },
+               //"dom": " <'float_left'f>r<'float_right'l>tip",
+                "columns": [
+                    {"data": "mobile", "defaultContent": "", "orderable": false},
+                    {"data": "source", "defaultContent": "", "orderable": false},
+                    {"data": "regTime", "defaultContent": "", "orderable": false},
+                    {"data": "regDay", "defaultContent": "", "orderable": false},
+                    {"data": "sheepDay", "defaultContent": "", "orderable": false},
+                    {"data": "cofirmFareTime", "defaultContent": "", "orderable": false},
+                    {"data": "sumOrder", "defaultContent": "", "orderable": false},
+                    {"data": "sumConpleteOrderCount", "defaultContent": "", "orderable": false},
+                    {"data": "mtOrder", "defaultContent": "", "orderable": false},
+                    {"data": "hxOrder", "defaultContent": "", "orderable": false},
+                    {"data": "sumActualFare", "defaultContent": "", "orderable": false},
+                    {"data": "sumTotalFare", "defaultContent": "", "orderable": false}
+                ]
+            });
+    }
+
+    //订单明细查询
+    $("#userDetailSearchBt").click(function () {
+
+        var confirmTime1 = $('#confirmTime1').val();
+        var confirmTime2 = $('#confirmTime2').val();
+        if (confirmTime1.length == 0 || confirmTime2.length == 0) {
+            layer.msg('确认费用时间选择错误');
+            return
+        }
+        if(new Date(confirmTime1).getTime() > new Date(confirmTime2).getTime()){
+            layer.msg('查询时间选择错误');
+            return
+        }
+        var startDate = new Date($('#confirmTime1').val());
+        if(!checkDatelimit(startDate,$('#confirmTime2').val())){
+            alert("日期选择跨度不能超过一个月");
+            return;
+        }
+        example.ajax.reload();
+    });
+/*
+    //两个日期的差值多少天
+    function date1_date2_minus(date1, date2) {
+        var d1 = new Date(date1);
+        var d2 = new Date(date2);
+        var times = d1.getTime() - d2.getTime();
+        var days = parseInt(times / (1000 * 60 * 60 * 24));
+        return days;
+    }*/
+
+    //初始化
+    layui_load();
+    userOrderPL();
+    userDetailInit();
+
+</script>

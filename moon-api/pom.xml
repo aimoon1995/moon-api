@@ -51,11 +51,18 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.4.6</version>
+        </dependency>
     </dependencies>
     <modules>
         <module>moon-common</module>
         <module>moon-thread</module>
         <module>moon-redis</module>
+        <module>moon-security</module>
+        <module>moon-export-poi</module>
     </modules>
 
 </project>
