@@ -1,0 +1,90 @@
+package com.moon.moon_kafka.config;
+
+import com.fasterxml.jackson.databind.ser.std.StringSerializer;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ConsumerAwareListenerErrorHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @ClassName KafkaConfig
+ * @Description: TODO
+ * @Author zyl
+ * @Date 2020/12/2
+ * @Version V1.0
+ **/
+@Configuration
+public class KafkaConfig {
+
+
+
+    @Autowired
+    ConsumerFactory consumerFactory;
+    // 创建一个名为testtopic的Topic并设置分区数为8，分区副本数为2
+
+    /**
+     * @MethodName: initialTopic
+     * @Description: 创建一个名为moonTopic的topic，并设置partion数量为 8，副本数为2
+     * @Param: []
+     * @Return: org.apache.kafka.clients.admin.NewTopic
+     * @Author: zyl
+     * @Date: 2020/12/2
+     **/
+    @Bean
+    public NewTopic initialTopic() {
+        return new NewTopic("moonTopic", 8, (short) 2);
+    }
+
+    // 如果要修改分区数，只需修改配置值重启项目即可
+    // 修改分区数并不会导致数据的丢失，但是分区数只能增大不能减小
+    @Bean
+    public NewTopic updateTopic() {
+        return new NewTopic("moonTopic", 10, (short) 2);
+    }
+
+
+    /**
+     * @MethodName: consumerAwareErrorHandler
+     * @Description: 新建一个异常处理器，用@Bean注入
+     * @Param: []
+     * @Return: org.springframework.kafka.listener.ConsumerAwareListenerErrorHandler
+     * @Author: zyl
+     * @Date: 2020/12/2
+     **/
+    @Bean
+    public ConsumerAwareListenerErrorHandler consumerAwareErrorHandler() {
+        return (message, exception, consumer) -> {
+            System.out.println("消费异常：" + message.getPayload());
+            return null;
+        };
+    }
+
+    // 消息过滤器
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory filterContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();
+        factory.setConsumerFactory(consumerFactory);
+        // 被过滤的消息将被丢弃
+        factory.setAckDiscarded(true);
+        // 消息过滤策略
+        factory.setRecordFilterStrategy(consumerRecord -> {
+            if (Integer.parseInt(consumerRecord.value().toString()) % 2 == 0) {
+                return false;
+            }
+            //返回true消息则被过滤
+            return true;
+        });
+        return factory;
+    }
+
+}

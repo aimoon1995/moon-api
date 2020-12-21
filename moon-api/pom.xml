@@ -63,6 +63,7 @@
         <module>moon-redis</module>
         <module>moon-security</module>
         <module>moon-export-poi</module>
+        <module>moon-kafka</module>
     </modules>
 
 </project>
