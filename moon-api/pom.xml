@@ -69,6 +69,7 @@
         <module>moon-security</module>
         <module>moon-export-poi</module>
         <module>moon-kafka</module>
+        <module>moon-proxy</module>
     </modules>
 
 </project>
