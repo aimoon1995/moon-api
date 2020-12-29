@@ -14,19 +14,29 @@ public class ThreadJoin {
 
     public static void main(String[] args) throws InterruptedException {
         Runnable re = () ->{
-            for (int k=0;k<1000;k++) {
-                log.info("moonThread join -->{}",k);
+            for (int k=0;k<10;k++) {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                log.info("threadState---->{}",Thread.currentThread().getState());
             }
 
         };
         Thread thread =  new Thread(re);
+        log.info("threadState---->{}",thread.getState());
         thread.start();
-        for (int i=0; i<100;i++) {
+        log.info("threadState---->{}",thread.getState());
+        for (int i=0; i<10;i++) {
             log.info("mainThread --->{}",i);
-            if (i == 20) {
+            if (i == 5) {
                 thread.join();
+                log.info("threadState---->{}",thread.getState());
             }
         }
+
+
     }
 
 }

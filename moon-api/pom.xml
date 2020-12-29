@@ -70,6 +70,7 @@
         <module>moon-export-poi</module>
         <module>moon-kafka</module>
         <module>moon-proxy</module>
+        <module>moon-sorting</module>
     </modules>
 
 </project>
