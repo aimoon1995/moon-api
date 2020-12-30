@@ -9,10 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @SpringBootTest
 @Slf4j
@@ -24,8 +21,9 @@ class MoonThreadApplicationTests {
 
     @Test
     void contextLoads() {
-        Future<Map<String, Object>> future = taskExecutor.submit(new ImplementCallable());
-        Map<String, Object> obj = null;
+        FutureTask<Map<String, Object>> future = new FutureTask<>(new ImplementCallable());
+        new Thread(future).start();
+        Object obj = null;
         try {
             obj = future.get(1000 * 10, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -35,6 +33,6 @@ class MoonThreadApplicationTests {
         } catch (TimeoutException e) {
             e.printStackTrace();
         }
-        log.info("----------------------{}",obj);
+        log.info("----------------------{}",obj.toString());
     }
 }

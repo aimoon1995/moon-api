@@ -26,7 +26,7 @@ public class CopyOnWriteArrayListThread {
         List<String> list = new CopyOnWriteArrayList<>();
         for (int i = 1; i <= 1000; i++) {
             new Thread(()->{
-                list.add(UUID.randomUUID().toString().substring(0,5));
+                list.add("UUID.randomUUID().toString().substring(0,5)");
                 log.info("{}",list);
             },i+"").start();
         }
