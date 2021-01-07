@@ -17,16 +17,11 @@ import java.util.concurrent.TimeoutException;
 @SpringBootTest
 @Slf4j
 class MoonOneThreadApplicationTests {
-
-    @Qualifier("taskExecutor")
-    @Autowired
-    private ThreadPoolTaskExecutor taskExecutor;
-
     @Test
     void contextLoads() {
-       int i = 1;
-       i++;
-       i = i++;
-       log.info("-----{}-------",i);
+
+            String s ="  ";
+            log.info("------------------------{}",s.trim().length());
+
     }
 }
